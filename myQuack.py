@@ -24,7 +24,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
 
     '''
-    return [(10469231, 'Nicholas', 'Havilah'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos')]
+    return [(10469231, 'Nicholas', 'Havilah'), (10522662, 'Connor', 'McHugh'), (1234569, 'Eva', 'Tardos')]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -55,7 +55,9 @@ def prepare_dataset(dataset_path):
         else:
             yList.append(0)
     y = np.array(yList)
-    print(y)
+    # print(X)
+    # print()
+    # print(y)
     return X, y
 
 
@@ -144,4 +146,6 @@ if __name__ == "__main__":
     # Call your functions here
 
     # "INSERT YOUR CODE HERE"
-    prepare_dataset('D:\dOWNLOADS\medical_records(1).data')
+    
+    prepare_dataset('medical_records.data')
+    # print(prepare_dataset('medical_records.data'))
