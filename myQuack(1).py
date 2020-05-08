@@ -21,6 +21,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn import model_selection
 from sklearn import metrics
+from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 import os
 os.environ["PATH"] += os.pathsep + r'C:\Program Files (x86)\Graphviz2.38\bin'
@@ -84,36 +85,34 @@ def build_DecisionTree_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    # define training and test data to be used for accuracy measurement
-    x_train, x_test, y_train, y_test = train_test_split(
-        X_training, y_training)
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=None)
-    clf = clf.fit(x_train, y_train)
-    cv_scores = cross_val_score(clf, x_test, y_test, cv=10)
-    print(np.mean(cv_scores)*100)
-
+    clf = tree.DecisionTreeClassifier(max_depth=3)
+    clf = clf.fit(X_training, y_training)
+    # can uncomment this for reporting purposes-shows the full extent of the decision tree
     # plt.figure()
     # cn = ['M', 'B']
     # tree.plot_tree(clf, filled=True, class_names=cn)
     # plt.show()
-
-
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    # '''
-    # Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
 
-    # @param
-    #     X_training: X_training[i,:] is the ith example
-    #     y_training: y_training[i] is the class label of X_training[i,:]
+def build_NearrestNeighbours_classifier(X_training, y_training):
+    '''
+    Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
 
-    # @return
-    #     clf : the classifier built in this function
-    # '''
-    # # "INSERT YOUR CODE HERE"
-    # raise NotImplementedError()
+    @param
+        X_training: X_training[i,:] is the ith example
+        y_training: y_training[i] is the class label of X_training[i,:]
+
+    @return
+        clf : the classifier built in this function
+    '''
+    # "INSERT YOUR CODE HERE"
+    # play around with this hyperparameter to get accuracy as close as possible
+    clf = KNeighborsClassifier(n_neighbors=4)
+    clf.fit(X_training, y_training)
+    return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -166,9 +165,19 @@ if __name__ == "__main__":
     # functions to perform the required tasks and repeat your experiments.
     # Call your functions here
 
-    # "INSERT YOUR CODE HERE"
     # prepare the genralised datasets
     x, y = prepare_dataset('D:/dOWNLOADS/medical_records(1).data')
-    # each function will build their training and test data inside the function so we only
-    # need to define the general data here
-    build_DecisionTree_classifier(x, y)
+    # define training and test data to be used for accuracy measurement
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+
+    # create the classifiers
+    # decision tree classifier
+    dtc = build_DecisionTree_classifier(x_train, y_train)
+    # nearest neighbor classifier
+    nnc = build_NearrestNeighbours_classifier(x_train, y_train)
+
+    # test how accurate the classifiers are using Kfold cross validation
+    # test the decision tree
+    dtc_cv_scores = cross_val_score(dtc, x_test, y_test, cv=10)
+    # print the average result to get a better idea of general performance with the test set
+    print(np.mean(dtc_cv_scores))
