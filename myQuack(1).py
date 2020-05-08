@@ -14,8 +14,16 @@ You are welcome to use the pandas library if you know it.
 
 '''
 import numpy as np
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+from sklearn import tree
+from sklearn import preprocessing
+from sklearn import utils
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn import model_selection
+from sklearn import metrics
+import matplotlib.pyplot as plt
+import os
+os.environ["PATH"] += os.pathsep + r'C:\Program Files (x86)\Graphviz2.38\bin'
 
 
 def my_team():
@@ -76,26 +84,36 @@ def build_DecisionTree_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    # clf = tree.DecisionTreeClassifier()
-    # clf = clf.fit(X_training, y_training)
-    # return clf
+    # define training and test data to be used for accuracy measurement
+    x_train, x_test, y_train, y_test = train_test_split(
+        X_training, y_training)
+    # note that the max depth is the variable you want to play around with to get the best possible classifier
+    clf = tree.DecisionTreeClassifier(max_depth=None)
+    clf = clf.fit(x_train, y_train)
+    cv_scores = cross_val_score(clf, x_test, y_test, cv=10)
+    print(np.mean(cv_scores)*100)
 
+    # plt.figure()
+    # cn = ['M', 'B']
+    # tree.plot_tree(clf, filled=True, class_names=cn)
+    # plt.show()
+
+
+    return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    # '''
+    # Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
 
-def build_NearrestNeighbours_classifier(X_training, y_training):
-    '''
-    Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
+    # @param
+    #     X_training: X_training[i,:] is the ith example
+    #     y_training: y_training[i] is the class label of X_training[i,:]
 
-    @param
-        X_training: X_training[i,:] is the ith example
-        y_training: y_training[i] is the class label of X_training[i,:]
-
-    @return
-        clf : the classifier built in this function
-    '''
-    # "INSERT YOUR CODE HERE"
-    raise NotImplementedError()
+    # @return
+    #     clf : the classifier built in this function
+    # '''
+    # # "INSERT YOUR CODE HERE"
+    # raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -150,13 +168,7 @@ if __name__ == "__main__":
 
     # "INSERT YOUR CODE HERE"
     # prepare the genralised datasets
-    x, y = prepare_dataset('D:\dOWNLOADS\medical_records(1).data')
-    # prepare 80% of the dataset as training data
-    # actual values
-
-    # classification data
-
-    # prepare 20% of the dataset as test data
-    # actual values
-
-    # classification data
+    x, y = prepare_dataset('D:/dOWNLOADS/medical_records(1).data')
+    # each function will build their training and test data inside the function so we only
+    # need to define the general data here
+    build_DecisionTree_classifier(x, y)
