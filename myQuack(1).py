@@ -89,7 +89,7 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=4)
+    clf = tree.DecisionTreeClassifier(max_depth=3, random_state=0)
     clf = clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,7 +108,7 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    clf = KNeighborsClassifier(n_neighbors=1)
+    clf = KNeighborsClassifier(n_neighbors=1, random_state=0)
     clf.fit(X_training, y_training)
     return clf
 
@@ -127,7 +127,7 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    clf = svm.SVC(C=1)
+    clf = svm.SVC(C=1, random_state=0)
     clf.fit(X_training, y_training)
     return clf
 
@@ -148,7 +148,7 @@ def build_NeuralNetwork_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    clf = MLPClassifier()
+    clf = MLPClassifier(random_state=0)
     clf.fit(X_training, y_training)
     return clf
 
@@ -158,7 +158,6 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
 # here will be the method that validates how good the classifiers are
-# using k fold cross validation
 def check_Classifier_Performance(X_test, y_test, clf):
     results = clf.predict(X_test)
     average_results = accuracy_score(y_test, results)
@@ -176,7 +175,8 @@ if __name__ == "__main__":
     # prepare the genralised datasets
     x, y = prepare_dataset('D:/dOWNLOADS/medical_records(1).data')
     # define training and test data to be used for accuracy measurement
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, random_state=0)
 
     # for assessor purposes, uncomment the classifier you want to use
     # no other lines should need to be commented out, as the rest of the code
