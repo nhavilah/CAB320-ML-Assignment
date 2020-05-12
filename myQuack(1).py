@@ -17,12 +17,15 @@ import numpy as np
 from sklearn import tree
 from sklearn import preprocessing
 from sklearn import utils
+from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn import model_selection
 from sklearn import metrics
 from sklearn import svm
+from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
@@ -86,13 +89,8 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=3)
+    clf = tree.DecisionTreeClassifier(max_depth=4)
     clf = clf.fit(X_training, y_training)
-    # can uncomment this for reporting purposes-shows the full extent of the decision tree
-    # plt.figure()
-    # cn = ['M', 'B']
-    # tree.plot_tree(clf, filled=True, class_names=cn)
-    # plt.show()
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -110,7 +108,7 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    clf = KNeighborsClassifier(n_neighbors=4)
+    clf = KNeighborsClassifier(n_neighbors=1)
     clf.fit(X_training, y_training)
     return clf
 
@@ -157,9 +155,14 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
-    # "INSERT YOUR CODE HERE"
-    raise NotImplementedError()
+# AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
+# "INSERT YOUR CODE HERE"
+# here will be the method that validates how good the classifiers are
+# using k fold cross validation
+def check_Classifier_Performance(X_test, y_test, clf):
+    results = clf.predict(X_test)
+    average_results = accuracy_score(y_test, results)
+    return average_results*100
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -175,14 +178,23 @@ if __name__ == "__main__":
     # define training and test data to be used for accuracy measurement
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
-    # create the classifiers
-    # decision tree classifier
-    dtc = build_DecisionTree_classifier(x_train, y_train)
-    # nearest neighbor classifier
-    nnc = build_NearrestNeighbours_classifier(x_train, y_train)
+    # for assessor purposes, uncomment the classifier you want to use
+    # no other lines should need to be commented out, as the rest of the code
+    # handles training and testing for you
+    # list of classifiers
 
-    # test how accurate the classifiers are using Kfold cross validation
-    # test the decision tree
-    dtc_cv_scores = cross_val_score(dtc, x_test, y_test, cv=10)
-    # print the average result to get a better idea of general performance with the test set
-    print(np.mean(dtc_cv_scores))
+    clf = build_DecisionTree_classifier(
+        x_train, y_train)  # decision tree classifier
+
+    # clf = build_NearrestNeighbours_classifier(
+    #     x_train, y_train)  # nearest neighbours classifier
+
+    # clf = build_SupportVectorMachine_classifier(
+    #     x_train, y_train)  # svm classifier
+
+    # clf = build_NeuralNetwork_classifier(
+    #     x_train, y_train)  # neural network classifier
+
+    # call the test method
+    performance_measure = check_Classifier_Performance(x_test, y_test, clf)
+    print("Accuracy: %.2f%%" % performance_measure)
