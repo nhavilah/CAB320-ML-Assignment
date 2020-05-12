@@ -19,12 +19,12 @@ from sklearn import preprocessing
 from sklearn import utils
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
 from sklearn import model_selection
 from sklearn import metrics
+from sklearn import svm
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
-import os
-os.environ["PATH"] += os.pathsep + r'C:\Program Files (x86)\Graphviz2.38\bin'
 
 
 def my_team():
@@ -33,7 +33,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
 
     '''
-    return [(10469231, 'Nicholas', 'Havilah'), (10522662, 'Connor', 'McHugh'), (1234569, 'Eva', 'Tardos')]
+    return [(10469231, 'Nicholas', 'Havilah'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos')]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -129,7 +129,9 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    raise NotImplementedError()
+    clf = svm.SVC(C=1)
+    clf.fit(X_training, y_training)
+    return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -148,7 +150,10 @@ def build_NeuralNetwork_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    raise NotImplementedError()
+    clf = MLPClassifier()
+    clf.fit(X_training, y_training)
+    return clf
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
