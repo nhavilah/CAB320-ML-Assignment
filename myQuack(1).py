@@ -27,6 +27,7 @@ from sklearn import metrics
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
@@ -37,7 +38,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
 
     '''
-    return [(10469231, 'Nicholas', 'Havilah'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos')]
+    return [(10469231, 'Nicholas', 'Havilah'), (1234568, 'Connor', 'McHugh'), (1234569, 'Kevin', 'Duong')]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -183,11 +184,14 @@ def check_Classifier_Performance(X_test, y_test, clf):
     results = clf.predict(X_test)
     average_results = accuracy_score(results, y_test)*100
     report = classification_report(results, y_test)
+    matrix = confusion_matrix(results, y_test)
     print("Test Prediction Accuracy: %.2f%%" % average_results)
-    print("Report:")
     print("Classifier:")
     print(clf)
+    print("Report:")
     print(report)
+    print("Confusion Matrix:")
+    print(matrix)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -209,8 +213,8 @@ if __name__ == "__main__":
     # handles training and testing for you
     # list of classifiers
 
-    clf = build_DecisionTree_classifier(
-        x_train, y_train)  # decision tree classifier
+    # clf = build_DecisionTree_classifier(
+    #     x_train, y_train)  # decision tree classifier
 
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
@@ -218,8 +222,8 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    # clf = build_NeuralNetwork_classifier(
-    #     x_train, y_train)  # neural network classifier
+    clf = build_NeuralNetwork_classifier(
+        x_train, y_train)  # neural network classifier
 
     # call the test method
     check_Classifier_Performance(x_test, y_test, clf)
