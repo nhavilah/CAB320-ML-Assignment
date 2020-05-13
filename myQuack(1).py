@@ -30,6 +30,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
 
@@ -39,7 +41,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
 
     '''
-    return [(10469231, 'Nicholas', 'Havilah'), (1234568, 'Connor', 'McHugh'), (1234569, 'Kevin', 'Duong')]
+    return [(10469231, 'Nicholas', 'Havilah'), (10522662, 'Connor', 'McHugh'), (9448977, 'Kevin', 'Duong')]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -92,8 +94,15 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
-    clf = clf.fit(X_training, y_training)
+    model = tree.DecisionTreeClassifier()
+    #adjust arange values for the values tested
+    params = {"max_depth":np.arange(1, 15, 1)}
+    clf = RandomizedSearchCV(model,params, random_state = 0)
+    clf.fit(X_training, y_training)
+    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+
+##    clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
+##    clf = clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -111,8 +120,18 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    clf = KNeighborsClassifier(n_neighbors=8)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-j", "--jobs", type=int, default=-1,help="# of jobs for k-NN distance (-1 uses all available cores)")
+    args = vars(ap.parse_args())
+    model = KNeighborsClassifier(n_jobs=args["jobs"])
+    #adjust arange values for the values tested
+    params = {"n_neighbors":np.arange(1, 15, 1)}
+    clf = RandomizedSearchCV(model,params, random_state = 0)
     clf.fit(X_training, y_training)
+    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+
+##    clf = KNeighborsClassifier(n_neighbors=8)
+##    clf.fit(X_training, y_training)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,8 +149,14 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    clf = svm.SVC(C=1, random_state=0)
+    model = svm.SVC()
+    #adjust arange values for the values tested
+    params = {"C":np.arange(1, 15, 1)}
+    clf = RandomizedSearchCV(model,params, random_state = 0)
     clf.fit(X_training, y_training)
+    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+##    clf = svm.SVC(C=1, random_state=0)
+##    clf.fit(X_training, y_training)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,7 +226,7 @@ if __name__ == "__main__":
     # Call your functions here
 
     # prepare the genralised datasets
-    x, y = prepare_dataset('D:/dOWNLOADS/medical_records(1).data')
+    x, y = prepare_dataset('./medical_records.data')
     # define training and test data to be used for accuracy measurement
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.2, random_state=100)
