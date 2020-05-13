@@ -28,6 +28,7 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
@@ -91,13 +92,8 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=2, random_state=0)
+    clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
     clf = clf.fit(X_training, y_training)
-    # use this bit to give estimation error before being tested
-    results = clf.predict(X_training)
-    # print off the performance metrics for the classifier
-    average_results = accuracy_score(results, y_training)*100
-    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -117,11 +113,6 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     # play around with this hyperparameter to get accuracy as close as possible
     clf = KNeighborsClassifier(n_neighbors=8)
     clf.fit(X_training, y_training)
-    # use this bit to give estimation error before being tested
-    results = clf.predict(X_training)
-    # print off the performance metrics for the classifier
-    average_results = accuracy_score(results, y_training)*100
-    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,11 +132,6 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     # "INSERT YOUR CODE HERE"
     clf = svm.SVC(C=1, random_state=0)
     clf.fit(X_training, y_training)
-    # use this bit to give estimation error before being tested
-    results = clf.predict(X_training)
-    # print off the performance metrics for the classifier
-    average_results = accuracy_score(results, y_training)*100
-    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,11 +153,6 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     # "INSERT YOUR CODE HERE"
     clf = MLPClassifier(random_state=0)
     clf.fit(X_training, y_training)
-    # use this bit to give estimation error before being tested
-    results = clf.predict(X_training)
-    # print off the performance metrics for the classifier
-    average_results = accuracy_score(results, y_training)*100
-    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 
@@ -179,20 +160,37 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
-# here will be the method that validates how good the classifiers are
-def check_Classifier_Performance(X_test, y_test, clf):
-    results = clf.predict(X_test)
-    average_results = accuracy_score(results, y_test)*100
-    report = classification_report(results, y_test)
-    matrix = confusion_matrix(results, y_test)
-    print("Test Prediction Accuracy: %.2f%%" % average_results)
-    print("Classifier:")
-    print(clf)
-    print("Report:")
-    print(report)
-    print("Confusion Matrix:")
-    print(matrix)
 
+# evaluates the classifier's accuracy using the training data(we need this to show we aren't overfitting the data)
+def check_Classifier_Training_Performance(clf, x_training, y_training):
+    results = cross_val_score(clf, x_training, y_training, cv=10).mean()*100
+    print("Training Prediction Accuracy: %.2f%%" % results)
+
+# evaluates the classifier's accuracy using the testing data
+
+
+def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
+    results = cross_val_score(clf, x_testing, y_testing, cv=10).mean()*100
+    print("Testing Prediction Accuracy: %.2f%%" % results)
+
+# creates a report on the classifier that we can use to show how accurate it is
+
+
+def classifier_Performance_Report(clf, x_testing, y_testing):
+    prediction = clf.predict(x_testing)
+    results = classification_report(prediction, y_testing)
+    print("Report:")
+    print(results)
+
+# creates a confusion matrix that allows us to see more of what's happening with the data after the classifier operates on it
+
+
+def classifier_Confusion_Matrix(clf, x_testing, y_testing):
+    results = plot_confusion_matrix(
+        clf, x_testing, y_testing, normalize='true')
+    print("Confusion Matrix:")
+    print(results)
+    plt.show()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -206,15 +204,15 @@ if __name__ == "__main__":
     x, y = prepare_dataset('D:/dOWNLOADS/medical_records(1).data')
     # define training and test data to be used for accuracy measurement
     x_train, x_test, y_train, y_test = train_test_split(
-        x, y, test_size=0.2, random_state=0)
+        x, y, test_size=0.2, random_state=100)
 
     # for assessor purposes, uncomment the classifier you want to use
     # no other lines should need to be commented out, as the rest of the code
     # handles training and testing for you
     # list of classifiers
 
-    # clf = build_DecisionTree_classifier(
-    #     x_train, y_train)  # decision tree classifier
+    clf = build_DecisionTree_classifier(
+        x_train, y_train)  # decision tree classifier
 
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
@@ -222,8 +220,14 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    clf = build_NeuralNetwork_classifier(
-        x_train, y_train)  # neural network classifier
+    # clf = build_NeuralNetwork_classifier(
+    #     x_train, y_train)  # neural network classifier
 
-    # call the test method
-    check_Classifier_Performance(x_test, y_test, clf)
+    # call the methods that will evaluate classifier performance
+    check_Classifier_Training_Performance(clf, x_train, y_train)
+    check_Classifier_Testing_Performance(clf, x_test, y_test)
+    classifier_Performance_Report(clf, x_test, y_test)
+    classifier_Confusion_Matrix(clf, x_test, y_test)
+
+    # print the performance data
+    print(clf)
