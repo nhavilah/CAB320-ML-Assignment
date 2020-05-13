@@ -26,6 +26,7 @@ from sklearn import model_selection
 from sklearn import metrics
 from sklearn import svm
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
@@ -89,8 +90,13 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    clf = tree.DecisionTreeClassifier(max_depth=3, random_state=0)
+    clf = tree.DecisionTreeClassifier(max_depth=2, random_state=0)
     clf = clf.fit(X_training, y_training)
+    # use this bit to give estimation error before being tested
+    results = clf.predict(X_training)
+    # print off the performance metrics for the classifier
+    average_results = accuracy_score(results, y_training)*100
+    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -108,8 +114,13 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    clf = KNeighborsClassifier(n_neighbors=1, random_state=0)
+    clf = KNeighborsClassifier(n_neighbors=8)
     clf.fit(X_training, y_training)
+    # use this bit to give estimation error before being tested
+    results = clf.predict(X_training)
+    # print off the performance metrics for the classifier
+    average_results = accuracy_score(results, y_training)*100
+    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -129,6 +140,11 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     # "INSERT YOUR CODE HERE"
     clf = svm.SVC(C=1, random_state=0)
     clf.fit(X_training, y_training)
+    # use this bit to give estimation error before being tested
+    results = clf.predict(X_training)
+    # print off the performance metrics for the classifier
+    average_results = accuracy_score(results, y_training)*100
+    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,6 +166,11 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     # "INSERT YOUR CODE HERE"
     clf = MLPClassifier(random_state=0)
     clf.fit(X_training, y_training)
+    # use this bit to give estimation error before being tested
+    results = clf.predict(X_training)
+    # print off the performance metrics for the classifier
+    average_results = accuracy_score(results, y_training)*100
+    print("Trainign Prediction Accuracy: %.2f%%" % average_results)
     return clf
 
 
@@ -160,8 +181,13 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 # here will be the method that validates how good the classifiers are
 def check_Classifier_Performance(X_test, y_test, clf):
     results = clf.predict(X_test)
-    average_results = accuracy_score(y_test, results)
-    return average_results*100
+    average_results = accuracy_score(results, y_test)*100
+    report = classification_report(results, y_test)
+    print("Test Prediction Accuracy: %.2f%%" % average_results)
+    print("Report:")
+    print("Classifier:")
+    print(clf)
+    print(report)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -196,5 +222,4 @@ if __name__ == "__main__":
     #     x_train, y_train)  # neural network classifier
 
     # call the test method
-    performance_measure = check_Classifier_Performance(x_test, y_test, clf)
-    print("Accuracy: %.2f%%" % performance_measure)
+    check_Classifier_Performance(x_test, y_test, clf)
