@@ -1,17 +1,10 @@
 
 '''
-
 2020
-
 Scaffolding code for the Machine Learning assignment.
-
 You should complete the provided functions and add more functions and classes as necessary.
-
 You are strongly encourage to use functions of the numpy, sklearn and tensorflow libraries.
-
 You are welcome to use the pandas library if you know it.
-
-
 '''
 import numpy as np
 from sklearn import tree
@@ -33,13 +26,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+import sys
+import argparse
 
 
 def my_team():
     '''
     Return the list of the team members of this assignment submission as a list
     of triplet of the form (student_number, first_name, last_name)
-
     '''
     return [(10469231, 'Nicholas', 'Havilah'), (10522662, 'Connor', 'McHugh'), (9448977, 'Kevin', 'Duong')]
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,14 +45,11 @@ def prepare_dataset(dataset_path):
         - the first field is a ID number
         - the second field is a class label 'B' or 'M'
         - the remaining fields are real-valued
-
     Return two numpy arrays X and y where
         - X is two dimensional. X[i,:] is the ith example
         - y is one dimensional. y[i] is the class label of X[i,:]
           y[i] should be set to 1 for 'M', and 0 for 'B'
-
     @param dataset_path: full path of the dataset text file
-
     @return
         X,y
     '''
@@ -84,25 +75,23 @@ def prepare_dataset(dataset_path):
 def build_DecisionTree_classifier(X_training, y_training):
     '''
     Build a Decision Tree classifier based on the training set X_training, y_training.
-
     @param
         X_training: X_training[i,:] is the ith example
         y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
     model = tree.DecisionTreeClassifier()
-    #adjust arange values for the values tested
-    params = {"max_depth":np.arange(1, 15, 1)}
-    clf = RandomizedSearchCV(model,params, random_state = 0)
+    # adjust arange values for the values tested
+    params = {"max_depth": np.arange(1, 15, 1)}
+    clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
     print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
 
-##    clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
-##    clf = clf.fit(X_training, y_training)
+# clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
+# clf = clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -110,28 +99,24 @@ def build_DecisionTree_classifier(X_training, y_training):
 def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
-
     @param
         X_training: X_training[i,:] is the ith example
         y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
     ap = argparse.ArgumentParser()
-    ap.add_argument("-j", "--jobs", type=int, default=-1,help="# of jobs for k-NN distance (-1 uses all available cores)")
+    ap.add_argument("-j", "--jobs", type=int, default=-1,
+                    help="# of jobs for k-NN distance (-1 uses all available cores)")
     args = vars(ap.parse_args())
     model = KNeighborsClassifier(n_jobs=args["jobs"])
-    #adjust arange values for the values tested
-    params = {"n_neighbors":np.arange(1, 15, 1)}
-    clf = RandomizedSearchCV(model,params, random_state = 0)
+    # adjust arange values for the values tested
+    params = {"n_neighbors": np.arange(1, 15, 1)}
+    clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
     print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
-
-##    clf = KNeighborsClassifier(n_neighbors=8)
-##    clf.fit(X_training, y_training)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,23 +125,19 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
 def build_SupportVectorMachine_classifier(X_training, y_training):
     '''
     Build a Support Vector Machine classifier based on the training set X_training, y_training.
-
     @param
         X_training: X_training[i,:] is the ith example
         y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
     model = svm.SVC()
-    #adjust arange values for the values tested
-    params = {"C":np.arange(1, 15, 1)}
-    clf = RandomizedSearchCV(model,params, random_state = 0)
+    # adjust arange values for the values tested
+    params = {"C": np.arange(1, 15, 1)}
+    clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
     print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
-##    clf = svm.SVC(C=1, random_state=0)
-##    clf.fit(X_training, y_training)
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,17 +148,24 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     Build a Neural Network classifier (with two dense hidden layers)
     based on the training set X_training, y_training.
     Use the Keras functions from the Tensorflow library
-
     @param
         X_training: X_training[i,:] is the ith example
         y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    clf = MLPClassifier(random_state=0)
+    model = MLPClassifier()
+    # adjust arange values for the values tested
+    params = [
+        {
+            "hidden_layer_sizes": [(30,)]
+        }
+    ]
+
+    clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
+    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
     return clf
 
 
@@ -236,8 +224,8 @@ if __name__ == "__main__":
     # handles training and testing for you
     # list of classifiers
 
-    clf = build_DecisionTree_classifier(
-        x_train, y_train)  # decision tree classifier
+    # clf = build_DecisionTree_classifier(
+    #     x_train, y_train)  # decision tree classifier
 
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
@@ -245,8 +233,8 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    # clf = build_NeuralNetwork_classifier(
-    #     x_train, y_train)  # neural network classifier
+    clf = build_NeuralNetwork_classifier(
+        x_train, y_train)  # neural network classifier
 
     # call the methods that will evaluate classifier performance
     check_Classifier_Training_Performance(clf, x_train, y_train)
