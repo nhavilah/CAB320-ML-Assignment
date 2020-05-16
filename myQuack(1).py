@@ -28,6 +28,10 @@ from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 import sys
 import argparse
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+from keras.wrappers.scikit_learn import KerasClassifier
+from keras.utils import to_categorical
 
 
 def my_team():
@@ -155,18 +159,40 @@ def build_NeuralNetwork_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    model = MLPClassifier()
-    # adjust arange values for the values tested
-    params = [
-        {
-            "hidden_layer_sizes": [(30,)]
-        }
-    ]
 
-    clf = GridSearchCV(model, params, cv=10)
+    # hidden_layer_sizes = [5, 10, 15, 20, 25, 35, 50]
+    # hidden_layer_sizes.keras.utils.to_categorical(hidden_layer_sizes, num_classes = 7)
+
+    activation = ['softmax', 'relu', 'tanh', 'sigmoid', 'linear']
+    hidden_layer_sizes = [5, 10]
+    optimizer = ['SGD', 'Adam', 'Adamax']
+
+    params = dict(activation=activation,
+                  hidden_layer_sizes=hidden_layer_sizes, optimizer=optimizer)
+
+    # model = KerasClassifier(build_fn = DL_Model, epochs = 50, batch_size = 40, verbose = 0)
+    model = KerasClassifier(build_fn=DL_Model, epochs=10,
+                            batch_size=40, verbose=0)
+
+    clf = GridSearchCV(estimator=model, param_grid=params, n_jobs=-1, cv=10)
+
     clf.fit(X_training, y_training)
+
     print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
     return clf
+
+    # model = MLPClassifier()
+    # # adjust arange values for the values tested
+    # params = [
+    #     {
+    #         "hidden_layer_sizes": [(40,)]
+    #     }
+    # ]
+
+    # clf = GridSearchCV(model, params, cv=10)
+    # clf.fit(X_training, y_training)
+    # print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+    # return clf
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,11 +230,21 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     print("Confusion Matrix:")
     print(results)
     plt.show()
+
+
+def DL_Model(activation='linear', hidden_layer_sizes=5, optimizer='Adam'):
+    model = Sequential()
+    model.add(Dense(hidden_layer_sizes, input_dim=4, activation=activation))
+    model.add(Dense(hidden_layer_sizes, activation=activation))
+    model.add(Dropout(0.3))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy',
+                  optimizer=optimizer, metrics=['accuracy'])
+    return model
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 if __name__ == "__main__":
-    pass
     # Write a main part that calls the different
     # functions to perform the required tasks and repeat your experiments.
     # Call your functions here
