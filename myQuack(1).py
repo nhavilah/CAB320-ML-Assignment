@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Flatten
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.utils import to_categorical
 
@@ -160,15 +160,12 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
 
-    # hidden_layer_sizes = [5, 10, 15, 20, 25, 35, 50]
-    # hidden_layer_sizes.keras.utils.to_categorical(hidden_layer_sizes, num_classes = 7)
-
-    activation = ['softmax', 'relu', 'tanh', 'sigmoid', 'linear']
     hidden_layer_sizes = [5, 10]
-    optimizer = ['SGD', 'Adam', 'Adamax']
+    # hidden_layer_sizes = to_categorical(hidden_layer_sizes, num_classes = 2)
 
-    params = dict(activation=activation,
-                  hidden_layer_sizes=hidden_layer_sizes, optimizer=optimizer)
+    # hidden_layer_sizes = [5, 10]
+
+    params = dict(hidden_layer_sizes=hidden_layer_sizes)
 
     # model = KerasClassifier(build_fn = DL_Model, epochs = 50, batch_size = 40, verbose = 0)
     model = KerasClassifier(build_fn=DL_Model, epochs=10,
@@ -232,14 +229,14 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     plt.show()
 
 
-def DL_Model(activation='linear', hidden_layer_sizes=5, optimizer='Adam'):
+def DL_Model(hidden_layer_sizes=5):
     model = Sequential()
-    model.add(Dense(hidden_layer_sizes, input_dim=4, activation=activation))
-    model.add(Dense(hidden_layer_sizes, activation=activation))
-    model.add(Dropout(0.3))
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy',
-                  optimizer=optimizer, metrics=['accuracy'])
+    # model.add(Flatten(input_shape=(28,28)))
+    model.add(Dense(hidden_layer_sizes, input_dim=8))
+    model.add(Dropout(0.5))
+    model.add(Dense(hidden_layer_sizes))
+    model.add(Dropout(0.5))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', activation='softmac', metrics=['accuracy'])
     return model
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
