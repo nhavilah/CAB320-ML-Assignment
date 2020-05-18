@@ -28,10 +28,10 @@ from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 import sys
 import argparse
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.wrappers.scikit_learn import KerasClassifier
-from keras.constraints import maxnorm
+# from keras.models import Sequential
+# from keras.layers import Dense, Dropout, Flatten
+# from keras.wrappers.scikit_learn import KerasClassifier
+# from keras.constraints import maxnorm
 import time
 
 
@@ -88,12 +88,12 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # note that the max depth is the variable you want to play around with to get the best possible classifier
-    model = tree.DecisionTreeClassifier()
+    model = tree.DecisionTreeClassifier(random_state=1)
     # adjust arange values for the values tested
-    params = {"max_depth": np.arange(1, 15, 1)}
-    clf = GridSearchCV(model, params, cv=10)
+    params = {"max_depth": np.arange(1, 30, 1)}
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+    print("[INFO] Search best parameters: {}".format(clf.best_params_))
 
 # clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
 # clf = clf.fit(X_training, y_training)
@@ -112,16 +112,17 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-j", "--jobs", type=int, default=-1,
-                    help="# of jobs for k-NN distance (-1 uses all available cores)")
-    args = vars(ap.parse_args())
-    model = KNeighborsClassifier(n_jobs=args["jobs"])
+    # ap = argparse.ArgumentParser()
+    # ap.add_argument("-j", "--jobs", type=int, default=-1,
+    #                 help="# of jobs for k-NN distance (-1 uses all available cores)")
+    # args = vars(ap.parse_args())
+    # model = KNeighborsClassifier(n_jobs=args["jobs"])
+    model = KNeighborsClassifier()
     # adjust arange values for the values tested
     params = {"n_neighbors": np.arange(1, 15, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,12 +138,12 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    model = svm.SVC()
+    model = svm.SVC(random_state=100)
     # adjust arange values for the values tested
     params = {"C": np.arange(1, 15, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,47 +160,20 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     @return
         clf : the classifier built in this function
     '''
-    
-    seed = 42
-    np.random.seed(seed)
-    
-    # create model
-    model = KerasClassifier(build_fn=create_NN_model,
-                            epochs=100, batch_size=10, verbose=0)
-    
-    # define the grid search parameters
-    # hidden_layer_sizes = [1, 5, 10, 20, 30]
-    hidden_layer_sizes = [1, 5, 10, 15, 20, 25, 30]
-    params = dict(hidden_layer_sizes=hidden_layer_sizes)
-    clf = GridSearchCV(estimator=model, param_grid=params, n_jobs=-1, cv=10)
+    model = MLPClassifier(max_iter=1500, random_state=100)
+    params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    
-    print("Best: %f using %s" %
-          (clf.best_score_, clf.best_params_))
-
-
-    means = clf.cv_results_['mean_test_score']
-    stds = clf.cv_results_['std_test_score']
-    params = clf.cv_results_['params']
-    for mean, stdev, param in zip(means, stds, params):
-        print("%f (%f) with: %r" % (mean, stdev, param))
-    
-    # print('--------------------------------------------------')
-    # eval_model = create_NN_model()
-    # eval_model.evaluate(X_training, y_training, batch_size=10)
-    # print('--------------------------------------------------')
-        
-    print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
+    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
-    
-
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
 
 # evaluates the classifier's accuracy using the training data(we need this to show we aren't overfitting the data)
+
+
 def check_Classifier_Training_Performance(clf, x_training, y_training):
     results = cross_val_score(clf, x_training, y_training, cv=10).mean()*100
     print("Training Prediction Accuracy: %.2f%%" % results)
@@ -229,32 +203,7 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     print("Confusion Matrix:")
     print(results)
     plt.show()
-    
-def keras_Confusion_Matrix(clf, x_testing, y_testing):
-    pass
 
-
-def create_NN_model(hidden_layer_sizes=5):
-    model = Sequential()
-    
-    model.add(Dense(hidden_layer_sizes, input_dim=30, kernel_initializer='uniform',
-                    activation='linear', kernel_constraint=maxnorm(4)))
-    # model.add(Dropout(0.1))
-    model.add(Dense(hidden_layer_sizes, kernel_initializer='uniform', activation='linear'))
-    # model.add(Dropout(0.1))
-    model.add(Dense(1, activation='sigmoid'))
-
-    
-    # Compile model
-    model.compile(loss='binary_crossentropy',
-                  optimizer='adam', metrics=['accuracy'])
-
-    
-
-    # print("\n Model Layers:", len(model.layers), "\n")
-    # model.summary()
-
-    return model
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -262,7 +211,6 @@ if __name__ == "__main__":
     # Write a main part that calls the different
     # functions to perform the required tasks and repeat your experiments.
     # Call your functions here
-  
 
     # prepare the genralised datasets
     x, y = prepare_dataset('./medical_records.data')
@@ -274,12 +222,11 @@ if __name__ == "__main__":
     # no other lines should need to be commented out, as the rest of the code
     # handles training and testing for you
     # list of classifiers
-    
-    start_time = time.time()
-    
 
-    # clf = build_DecisionTree_classifier(
-    #     x_train, y_train)  # decision tree classifier
+    start_time = time.time()
+
+    clf = build_DecisionTree_classifier(
+        x_train, y_train)  # decision tree classifier
 
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
@@ -287,19 +234,17 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    clf = build_NeuralNetwork_classifier(
-        x_train, y_train)  # neural network classifier
-    
-    
+    # clf = build_NeuralNetwork_classifier(
+    #     x_train, y_train)  # neural network classifier
 
     # call the methods that will evaluate classifier performance
-    # check_Classifier_Training_Performance(clf, x_train, y_train)
-    # check_Classifier_Testing_Performance(clf, x_test, y_test)
+    check_Classifier_Training_Performance(clf, x_train, y_train)
+    check_Classifier_Testing_Performance(clf, x_test, y_test)
     # classifier_Performance_Report(clf, x_test, y_test)
-    
+
     # classifier_Confusion_Matrix(clf, x_test, y_test)
 
     # print the performance data
-    print(clf)
+    # print(clf)
     run_time = time.time() - start_time
     print('The program took ', run_time, ' seconds to run')
