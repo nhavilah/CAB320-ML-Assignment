@@ -31,7 +31,8 @@ import argparse
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.wrappers.scikit_learn import KerasClassifier
-from keras.utils import to_categorical
+from keras.constraints import maxnorm
+import time
 
 
 def my_team():
@@ -158,38 +159,39 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     @return
         clf : the classifier built in this function
     '''
-    # "INSERT YOUR CODE HERE"
-
-    hidden_layer_sizes = [5, 10]
-    # hidden_layer_sizes = to_categorical(hidden_layer_sizes, num_classes = 2)
-
-    # hidden_layer_sizes = [5, 10]
-
+    
+    seed = 42
+    np.random.seed(seed)
+    
+    # create model
+    model = KerasClassifier(build_fn=create_NN_model,
+                            epochs=100, batch_size=10, verbose=0)
+    
+    # define the grid search parameters
+    # hidden_layer_sizes = [1, 5, 10, 20, 30]
+    hidden_layer_sizes = [1, 5, 10, 15, 20, 25, 30]
     params = dict(hidden_layer_sizes=hidden_layer_sizes)
-
-    # model = KerasClassifier(build_fn = DL_Model, epochs = 50, batch_size = 40, verbose = 0)
-    model = KerasClassifier(build_fn=DL_Model, epochs=10,
-                            batch_size=40, verbose=0)
-
     clf = GridSearchCV(estimator=model, param_grid=params, n_jobs=-1, cv=10)
-
     clf.fit(X_training, y_training)
+    
+    print("Best: %f using %s" %
+          (clf.best_score_, clf.best_params_))
 
+
+    means = clf.cv_results_['mean_test_score']
+    stds = clf.cv_results_['std_test_score']
+    params = clf.cv_results_['params']
+    for mean, stdev, param in zip(means, stds, params):
+        print("%f (%f) with: %r" % (mean, stdev, param))
+    
+    # print('--------------------------------------------------')
+    # eval_model = create_NN_model()
+    # eval_model.evaluate(X_training, y_training, batch_size=10)
+    # print('--------------------------------------------------')
+        
     print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
     return clf
-
-    # model = MLPClassifier()
-    # # adjust arange values for the values tested
-    # params = [
-    #     {
-    #         "hidden_layer_sizes": [(40,)]
-    #     }
-    # ]
-
-    # clf = GridSearchCV(model, params, cv=10)
-    # clf.fit(X_training, y_training)
-    # print("[INFO] randomized search best parameters: {}".format(clf.best_params_))
-    # return clf
+    
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,16 +229,31 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     print("Confusion Matrix:")
     print(results)
     plt.show()
+    
+def keras_Confusion_Matrix(clf, x_testing, y_testing):
+    pass
 
 
-def DL_Model(hidden_layer_sizes=5):
+def create_NN_model(hidden_layer_sizes=5):
     model = Sequential()
-    # model.add(Flatten(input_shape=(28,28)))
-    model.add(Dense(hidden_layer_sizes, input_dim=8))
-    model.add(Dropout(0.5))
-    model.add(Dense(hidden_layer_sizes))
-    model.add(Dropout(0.5))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', activation='softmac', metrics=['accuracy'])
+    
+    model.add(Dense(hidden_layer_sizes, input_dim=30, kernel_initializer='uniform',
+                    activation='linear', kernel_constraint=maxnorm(4)))
+    # model.add(Dropout(0.1))
+    model.add(Dense(hidden_layer_sizes, kernel_initializer='uniform', activation='linear'))
+    # model.add(Dropout(0.1))
+    model.add(Dense(1, activation='sigmoid'))
+
+    
+    # Compile model
+    model.compile(loss='binary_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+
+    
+
+    # print("\n Model Layers:", len(model.layers), "\n")
+    # model.summary()
+
     return model
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -245,6 +262,7 @@ if __name__ == "__main__":
     # Write a main part that calls the different
     # functions to perform the required tasks and repeat your experiments.
     # Call your functions here
+  
 
     # prepare the genralised datasets
     x, y = prepare_dataset('./medical_records.data')
@@ -256,6 +274,9 @@ if __name__ == "__main__":
     # no other lines should need to be commented out, as the rest of the code
     # handles training and testing for you
     # list of classifiers
+    
+    start_time = time.time()
+    
 
     # clf = build_DecisionTree_classifier(
     #     x_train, y_train)  # decision tree classifier
@@ -268,12 +289,17 @@ if __name__ == "__main__":
 
     clf = build_NeuralNetwork_classifier(
         x_train, y_train)  # neural network classifier
+    
+    
 
     # call the methods that will evaluate classifier performance
-    check_Classifier_Training_Performance(clf, x_train, y_train)
-    check_Classifier_Testing_Performance(clf, x_test, y_test)
-    classifier_Performance_Report(clf, x_test, y_test)
-    classifier_Confusion_Matrix(clf, x_test, y_test)
+    # check_Classifier_Training_Performance(clf, x_train, y_train)
+    # check_Classifier_Testing_Performance(clf, x_test, y_test)
+    # classifier_Performance_Report(clf, x_test, y_test)
+    
+    # classifier_Confusion_Matrix(clf, x_test, y_test)
 
     # print the performance data
     print(clf)
+    run_time = time.time() - start_time
+    print('The program took ', run_time, ' seconds to run')
