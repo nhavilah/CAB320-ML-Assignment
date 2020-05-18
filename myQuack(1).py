@@ -26,8 +26,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 import sys
-import argparse
 # from keras.models import Sequential
 # from keras.layers import Dense, Dropout, Flatten
 # from keras.wrappers.scikit_learn import KerasClassifier
@@ -93,10 +93,6 @@ def build_DecisionTree_classifier(X_training, y_training):
     params = {"max_depth": np.arange(1, 30, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    print("[INFO] Search best parameters: {}".format(clf.best_params_))
-
-# clf = tree.DecisionTreeClassifier(max_depth=6, random_state=100)
-# clf = clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -112,17 +108,11 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     # "INSERT YOUR CODE HERE"
     # play around with this hyperparameter to get accuracy as close as possible
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument("-j", "--jobs", type=int, default=-1,
-    #                 help="# of jobs for k-NN distance (-1 uses all available cores)")
-    # args = vars(ap.parse_args())
-    # model = KNeighborsClassifier(n_jobs=args["jobs"])
     model = KNeighborsClassifier()
     # adjust arange values for the values tested
     params = {"n_neighbors": np.arange(1, 15, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,7 +133,6 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     params = {"C": np.arange(1, 15, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,7 +153,6 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    print("[INFO] Search best parameters: {}".format(clf.best_params_))
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -184,6 +172,7 @@ def check_Classifier_Training_Performance(clf, x_training, y_training):
 def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
     results = cross_val_score(clf, x_testing, y_testing, cv=10).mean()*100
     print("Testing Prediction Accuracy: %.2f%%" % results)
+    print("Best parameters: {}".format(clf.best_params_))
 
 # creates a report on the classifier that we can use to show how accurate it is
 
@@ -204,6 +193,23 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     print(results)
     plt.show()
 
+# creates a plot showing accuracy of the classifier using two key features
+# code sourced from https://scikit-learn.org/stable/auto_examples/neighbors/plot_classification.html#sphx-glr-auto-examples-neighbors-plot-classification-py
+
+
+def plot_Classifier_Performance(clf, x_testing, y_testing, x_training, y_training):
+    plt.figure()
+    reduced_data = x_testing[:, :2]
+    reduced_data2 = x_training[:, :2]
+    h = 0.02
+    x_min, x_max = reduced_data[:, 0].min()-1, reduced_data[:, 0].max()+1
+    y_min, y_max = reduced_data[:, 1].min()-1, reduced_data[:, 0].max()+1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.scatter(reduced_data2, y_training)
+    plt.show()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -217,7 +223,6 @@ if __name__ == "__main__":
     # define training and test data to be used for accuracy measurement
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.2, random_state=100)
-
     # for assessor purposes, uncomment the classifier you want to use
     # no other lines should need to be commented out, as the rest of the code
     # handles training and testing for you
@@ -243,7 +248,7 @@ if __name__ == "__main__":
     # classifier_Performance_Report(clf, x_test, y_test)
 
     # classifier_Confusion_Matrix(clf, x_test, y_test)
-
+    plot_Classifier_Performance(clf, x_test, y_test, x_train, y_train)
     # print the performance data
     # print(clf)
     run_time = time.time() - start_time
