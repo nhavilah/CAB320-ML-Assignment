@@ -90,11 +90,9 @@ def build_DecisionTree_classifier(X_training, y_training):
     # note that the max depth is the variable you want to play around with to get the best possible classifier
     model = tree.DecisionTreeClassifier(random_state=1)
     # adjust arange values for the values tested
-    params = {"max_depth": np.arange(1, 30, 1)}
+    params = {"max_depth": np.arange(1, 10, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    print("Best parameters: {}".format(clf.best_params_))
-    clf = clf.best_estimator_
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -112,11 +110,9 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     # play around with this hyperparameter to get accuracy as close as possible
     model = KNeighborsClassifier()
     # adjust arange values for the values tested
-    params = {"n_neighbors": np.arange(1, 15, 1)}
+    params = {"n_neighbors": np.arange(8, 30, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("Best parameters: {}".format(clf.best_params_))
-    clf = clf.best_estimator_
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,10 +131,8 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     model = svm.SVC(random_state=1)
     # adjust arange values for the values tested
     params = {"C": np.arange(1, 15, 1)}
-    clf = GridSearchCV(model, params, cv=10, refit=True)
+    clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
-    print("Best parameters: {}".format(clf.best_params_))
-    clf = clf.best_estimator_
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,12 +149,10 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     @return
         clf : the classifier built in this function
     '''
-    model = MLPClassifier(max_iter=1500, random_state=50)
+    model = MLPClassifier(max_iter=1500, random_state=10)
     params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
-    print("Best parameters: {}".format(clf.best_params_))
-    clf = clf.best_estimator_
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -173,7 +165,7 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
     results = balanced_accuracy_score(
         clf.predict(x_testing), y_testing).mean()*100
-    print("Testing Prediction Accuracy: %.2f%%" % results)
+    print("Accuracy: %.2f%%" % results)
 
 # creates a report on the classifier that we can use to show how accurate it is
 
@@ -232,28 +224,29 @@ if __name__ == "__main__":
     # handles training and testing for you
     # list of classifiers
 
-    start_time = time.time()
+    print("Decision Tree")
+    clf = build_DecisionTree_classifier(
+        x_train, y_train)  # decision tree classifier
 
-    # clf = build_DecisionTree_classifier(
-    #     x_train, y_train)  # decision tree classifier
-
+    # print("Nearest Neighbours")
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
 
+    # print("SVM")
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    clf = build_NeuralNetwork_classifier(
-        x_train, y_train)  # neural network classifier
+    # print("Neural Network")
+    # clf = build_NeuralNetwork_classifier(
+    #     x_train, y_train)  # neural network classifier
 
     # call the methods that will evaluate classifier performance
     check_Classifier_Testing_Performance(clf, x_test, y_test)
+
     # classifier_Performance_Report(clf, x_test, y_test)
-
+    # OPTIONAL: Uncomment these lines to see the parameters used in the classifier, the best parameters,
+    # confusion matrix, and the graph plots
     # print(clf)
-
+    # print("Best parameters: {}".format(clf.best_params_))
     # classifier_Confusion_Matrix(clf, x_test, y_test)
     # plot_Classifier_Performance(clf, x_test, y_test)
-    # print the performance data
-    run_time = time.time() - start_time
-    print('The program took ', run_time, ' seconds to run')
