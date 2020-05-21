@@ -18,7 +18,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import model_selection
 from sklearn import metrics
 from sklearn import svm
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
@@ -93,6 +93,8 @@ def build_DecisionTree_classifier(X_training, y_training):
     params = {"max_depth": np.arange(1, 30, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
+    print("Best parameters: {}".format(clf.best_params_))
+    clf = clf.best_estimator_
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -113,6 +115,8 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     params = {"n_neighbors": np.arange(1, 15, 1)}
     clf = GridSearchCV(model, params, cv=10)
     clf.fit(X_training, y_training)
+    print("Best parameters: {}".format(clf.best_params_))
+    clf = clf.best_estimator_
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,11 +132,13 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
         clf : the classifier built in this function
     '''
     # "INSERT YOUR CODE HERE"
-    model = svm.SVC(random_state=100)
+    model = svm.SVC(random_state=1)
     # adjust arange values for the values tested
     params = {"C": np.arange(1, 15, 1)}
-    clf = GridSearchCV(model, params, cv=10)
+    clf = GridSearchCV(model, params, cv=10, refit=True)
     clf.fit(X_training, y_training)
+    print("Best parameters: {}".format(clf.best_params_))
+    clf = clf.best_estimator_
     return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,30 +155,25 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     @return
         clf : the classifier built in this function
     '''
-    model = MLPClassifier(max_iter=1500, random_state=100)
+    model = MLPClassifier(max_iter=1500, random_state=50)
     params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
     clf.fit(X_training, y_training)
+    print("Best parameters: {}".format(clf.best_params_))
+    clf = clf.best_estimator_
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
 
-# evaluates the classifier's accuracy using the training data(we need this to show we aren't overfitting the data)
-
-
-def check_Classifier_Training_Performance(clf, x_training, y_training):
-    results = cross_val_score(clf, x_training, y_training, cv=10).mean()*100
-    print("Training Prediction Accuracy: %.2f%%" % results)
-
 # evaluates the classifier's accuracy using the testing data
 
 
 def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
-    results = cross_val_score(clf, x_testing, y_testing, cv=10).mean()*100
+    results = balanced_accuracy_score(
+        clf.predict(x_testing), y_testing).mean()*100
     print("Testing Prediction Accuracy: %.2f%%" % results)
-    print("Best parameters: {}".format(clf.best_params_))
 
 # creates a report on the classifier that we can use to show how accurate it is
 
@@ -197,19 +198,22 @@ def classifier_Confusion_Matrix(clf, x_testing, y_testing):
 # code sourced from https://scikit-learn.org/stable/auto_examples/neighbors/plot_classification.html#sphx-glr-auto-examples-neighbors-plot-classification-py
 
 
-def plot_Classifier_Performance(clf, x_testing, y_testing, x_training, y_training):
-    plt.figure()
-    reduced_data = x_testing[:, :2]
-    reduced_data2 = x_training[:, :2]
-    h = 0.02
-    x_min, x_max = reduced_data[:, 0].min()-1, reduced_data[:, 0].max()+1
-    y_min, y_max = reduced_data[:, 1].min()-1, reduced_data[:, 0].max()+1
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                         np.arange(y_min, y_max, h))
-    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-    Z = Z.reshape(xx.shape)
-    plt.scatter(reduced_data2, y_training)
-    plt.show()
+# def plot_Classifier_Performance(clf, x_testing, y_testing):
+#     plt.figure()
+#     reduced_data = x_testing[:, :2]
+#     n_classes = 2
+#     plot_colors = "rb"
+#     plot_step = 0.02
+#     clf.fit(reduced_data, y_testing)
+#     h = 0.02
+#     x_min, x_max = reduced_data[:, 0].min()-1, reduced_data[:, 0].max()+1
+#     y_min, y_max = reduced_data[:, 1].min()-1, reduced_data[:, 0].max()+1
+#     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+#                          np.arange(y_min, y_max, h))
+#     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+#     Z = Z.reshape(xx.shape)
+#     cs = plt.contourf(xx, yy, Z, cmap=plt.cm.RdYlBu)
+#     plt.show()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -230,8 +234,8 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    clf = build_DecisionTree_classifier(
-        x_train, y_train)  # decision tree classifier
+    # clf = build_DecisionTree_classifier(
+    #     x_train, y_train)  # decision tree classifier
 
     # clf = build_NearrestNeighbours_classifier(
     #     x_train, y_train)  # nearest neighbours classifier
@@ -239,17 +243,17 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    # clf = build_NeuralNetwork_classifier(
-    #     x_train, y_train)  # neural network classifier
+    clf = build_NeuralNetwork_classifier(
+        x_train, y_train)  # neural network classifier
 
     # call the methods that will evaluate classifier performance
-    check_Classifier_Training_Performance(clf, x_train, y_train)
     check_Classifier_Testing_Performance(clf, x_test, y_test)
     # classifier_Performance_Report(clf, x_test, y_test)
 
-    # classifier_Confusion_Matrix(clf, x_test, y_test)
-    plot_Classifier_Performance(clf, x_test, y_test, x_train, y_train)
-    # print the performance data
     # print(clf)
+
+    # classifier_Confusion_Matrix(clf, x_test, y_test)
+    # plot_Classifier_Performance(clf, x_test, y_test)
+    # print the performance data
     run_time = time.time() - start_time
     print('The program took ', run_time, ' seconds to run')
