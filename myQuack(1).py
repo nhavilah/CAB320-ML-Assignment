@@ -91,7 +91,8 @@ def build_DecisionTree_classifier(X_training, y_training):
     model = tree.DecisionTreeClassifier(random_state=1)
     # adjust arange values for the values tested
     params = {"max_depth": np.arange(1, 10, 1)}
-    clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1, scoring=[
+                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +112,8 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     model = KNeighborsClassifier()
     # adjust arange values for the values tested
     params = {"n_neighbors": np.arange(8, 30, 1)}
-    clf = GridSearchCV(model, params, cv=10)
+    clf = GridSearchCV(model, params, cv=10, scoring=[
+                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 
@@ -131,7 +133,8 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     model = svm.SVC(random_state=1)
     # adjust arange values for the values tested
     params = {"C": np.arange(1, 15, 1)}
-    clf = GridSearchCV(model, params, cv=10)
+    clf = GridSearchCV(model, params, cv=10, scoring=[
+                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 
@@ -151,7 +154,8 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     '''
     model = MLPClassifier(max_iter=1500, random_state=10)
     params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
-    clf = GridSearchCV(model, params, cv=10, n_jobs=-1)
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
+                       scoring=['accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,26 +163,54 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
 
+# Plots a graph of 
+def plot_Hyperparameter_Op(clf):
+    # Create and array of the hyperparameter that was tuned    
+    parameters = []
+    for parameter in clf.param_grid.keys():
+        parameters.append(parameter)
+        
+    # Create an array of possible values for the hyperparameter
+    values = []
+    for value in clf.param_grid.values():
+        values.append(value)
+    values = list(values)[0]
+
+    metrics = clf.scoring
+    
+    # Create an array of all of the scores
+    scores = []
+    for metric in metrics:
+        scores.append(clf.cv_results_['mean_test_%s' % metric])
+
+    metric_num = 0
+    for scores in scores:
+        plt.plot(values, scores, '-', label=metrics[metric_num])
+        metric_num += 1
+
+    plt.xlabel(parameters)
+    plt.ylabel('average test score')
+    plt.legend(loc="lower right")
+    plt.grid(True)
+    plt.show()
+    
+
 # evaluates the classifier's accuracy using the testing data
-
-
 def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
     results = balanced_accuracy_score(
         clf.predict(x_testing), y_testing).mean()*100
     print("Accuracy: %.2f%%" % results)
 
+
 # creates a report on the classifier that we can use to show how accurate it is
-
-
 def classifier_Performance_Report(clf, x_testing, y_testing):
     prediction = clf.predict(x_testing)
     results = classification_report(prediction, y_testing)
     print("Report:")
     print(results)
 
+
 # creates a confusion matrix that allows us to see more of what's happening with the data after the classifier operates on it
-
-
 def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     results = plot_confusion_matrix(
         clf, x_testing, y_testing, normalize='true')
@@ -224,9 +256,9 @@ if __name__ == "__main__":
     # handles training and testing for you
     # list of classifiers
 
-    print("Decision Tree")
-    clf = build_DecisionTree_classifier(
-        x_train, y_train)  # decision tree classifier
+    # print("Decision Tree")
+    # clf = build_DecisionTree_classifier(
+    #     x_train, y_train)  # decision tree classifier
 
     # print("Nearest Neighbours")
     # clf = build_NearrestNeighbours_classifier(
@@ -236,9 +268,9 @@ if __name__ == "__main__":
     # clf = build_SupportVectorMachine_classifier(
     #     x_train, y_train)  # svm classifier
 
-    # print("Neural Network")
-    # clf = build_NeuralNetwork_classifier(
-    #     x_train, y_train)  # neural network classifier
+    print("Neural Network")
+    clf = build_NeuralNetwork_classifier(
+        x_train, y_train)  # neural network classifier
 
     # call the methods that will evaluate classifier performance
     check_Classifier_Testing_Performance(clf, x_test, y_test)
@@ -246,7 +278,10 @@ if __name__ == "__main__":
     # classifier_Performance_Report(clf, x_test, y_test)
     # OPTIONAL: Uncomment these lines to see the parameters used in the classifier, the best parameters,
     # confusion matrix, and the graph plots
+    
     # print(clf)
     # print("Best parameters: {}".format(clf.best_params_))
     # classifier_Confusion_Matrix(clf, x_test, y_test)
     # plot_Classifier_Performance(clf, x_test, y_test)
+    
+    plot_Hyperparameter_Op(clf)
