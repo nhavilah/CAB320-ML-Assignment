@@ -28,10 +28,6 @@ from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import sys
-# from keras.models import Sequential
-# from keras.layers import Dense, Dropout, Flatten
-# from keras.wrappers.scikit_learn import KerasClassifier
-# from keras.constraints import maxnorm
 import time
 
 
@@ -163,36 +159,51 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 # AND OTHER FUNCTIONS TO COMPLETE THE EXPERIMENTS
 # "INSERT YOUR CODE HERE"
 
-# Plots a graph of 
+# Plots a graph of
+
+
 def plot_Hyperparameter_Op(clf):
-    # Create and array of the hyperparameter that was tuned    
-    parameters = []
+    # Create and array of the hyperparameter that was tuned
+    parameters = list()
     for parameter in clf.param_grid.keys():
         parameters.append(parameter)
-        
+
     # Create an array of possible values for the hyperparameter
-    values = []
+    values = list()
     for value in clf.param_grid.values():
         values.append(value)
     values = list(values)[0]
 
     metrics = clf.scoring
-    
+
     # Create an array of all of the scores
-    scores = []
+    scores = list()
     for metric in metrics:
         scores.append(clf.cv_results_['mean_test_%s' % metric])
 
     metric_num = 0
-    for scores in scores:
-        plt.plot(values, scores, '-', label=metrics[metric_num])
+    for score in scores:
+        plt.plot(values, score, '-', label=metrics[metric_num])
         metric_num += 1
 
-    plt.xlabel(parameters)
+    plt.xlabel(parameters[0])
     plt.ylabel('average test score')
     plt.legend(loc="lower right")
     plt.grid(True)
+    plt.savefig('plots/' + parameters[0])
     plt.show()
+
+
+# Gets the testing and training accuracy for the provided classifier
+def check_Classifier_Both_Performance(clf):
+    test_score = clf.score(x_test, y_test) * 100
+    train_score = clf.score(x_train, y_train) * 100
+    test_error = 100 - test_score
+    train_error = 100 - train_score
+    print('Train Accuracy: %.2f%%' % train_score,
+          '\tTrain Error: %.2f%%' % train_error)
+    print('Test Accuracy: %.2f%%' % test_score,
+          '\tTest Error: %.2f%%' % test_error)
     
 
 # evaluates the classifier's accuracy using the testing data
@@ -214,74 +225,107 @@ def classifier_Performance_Report(clf, x_testing, y_testing):
 def classifier_Confusion_Matrix(clf, x_testing, y_testing):
     results = plot_confusion_matrix(
         clf, x_testing, y_testing, normalize='true')
-    print("Confusion Matrix:")
-    print(results)
+    # print("Confusion Matrix:")
+    # print(results)
     plt.show()
 
 # creates a plot showing accuracy of the classifier using two key features
 # code sourced from https://scikit-learn.org/stable/auto_examples/neighbors/plot_classification.html#sphx-glr-auto-examples-neighbors-plot-classification-py
 
 
-# def plot_Classifier_Performance(clf, x_testing, y_testing):
-#     plt.figure()
-#     reduced_data = x_testing[:, :2]
-#     n_classes = 2
-#     plot_colors = "rb"
-#     plot_step = 0.02
-#     clf.fit(reduced_data, y_testing)
-#     h = 0.02
-#     x_min, x_max = reduced_data[:, 0].min()-1, reduced_data[:, 0].max()+1
-#     y_min, y_max = reduced_data[:, 1].min()-1, reduced_data[:, 0].max()+1
-#     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-#                          np.arange(y_min, y_max, h))
-#     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-#     Z = Z.reshape(xx.shape)
-#     cs = plt.contourf(xx, yy, Z, cmap=plt.cm.RdYlBu)
-#     plt.show()
+def plot_Classifier_Performance(clf, x_testing, y_testing):
+    plt.figure()
+    reduced_data = x_testing[:, :2]
+    n_classes = 2
+    plot_colors = "rb"
+    plot_step = 0.02
+    clf.fit(reduced_data, y_testing)
+    h = 0.02
+    x_min, x_max = reduced_data[:, 0].min()-1, reduced_data[:, 0].max()+1
+    y_min, y_max = reduced_data[:, 1].min()-1, reduced_data[:, 0].max()+1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    cs = plt.contourf(xx, yy, Z, cmap=plt.cm.RdYlBu)
+    plt.show()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 if __name__ == "__main__":
-    # Write a main part that calls the different
-    # functions to perform the required tasks and repeat your experiments.
-    # Call your functions here
-
     # prepare the genralised datasets
     x, y = prepare_dataset('./medical_records.data')
+
     # define training and test data to be used for accuracy measurement
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.2, random_state=100)
+
     # for assessor purposes, uncomment the classifier you want to use
     # no other lines should need to be commented out, as the rest of the code
     # handles training and testing for you
     # list of classifiers
 
+
+# Classifiers
+
+#-------- Decision Tree Classifier ---------------------------------------#
     # print("Decision Tree")
     # clf = build_DecisionTree_classifier(
-    #     x_train, y_train)  # decision tree classifier
+    #     x_train, y_train)
+#-------------------------------------------------------------------------#
 
+
+#-------- Nearest Neighbour Classifier -----------------------------------#
     # print("Nearest Neighbours")
     # clf = build_NearrestNeighbours_classifier(
-    #     x_train, y_train)  # nearest neighbours classifier
+    #     x_train, y_train)
+#-------------------------------------------------------------------------#
 
+
+#-------- SVM Classifier -------------------------------------------------#
     # print("SVM")
     # clf = build_SupportVectorMachine_classifier(
-    #     x_train, y_train)  # svm classifier
+    #     x_train, y_train)
+#-------------------------------------------------------------------------#
 
+
+#-------- Neural Network Classifier --------------------------------------#
     print("Neural Network")
     clf = build_NeuralNetwork_classifier(
-        x_train, y_train)  # neural network classifier
+        x_train, y_train)
+#-------------------------------------------------------------------------#
 
-    # call the methods that will evaluate classifier performance
-    check_Classifier_Testing_Performance(clf, x_test, y_test)
 
-    # classifier_Performance_Report(clf, x_test, y_test)
-    # OPTIONAL: Uncomment these lines to see the parameters used in the classifier, the best parameters,
-    # confusion matrix, and the graph plots
-    
-    # print(clf)
-    # print("Best parameters: {}".format(clf.best_params_))
-    # classifier_Confusion_Matrix(clf, x_test, y_test)
-    # plot_Classifier_Performance(clf, x_test, y_test)
-    
+# Classifier performance / plotting methods
+
+#-------- Print testing / training scores --------------------------------#
+    check_Classifier_Both_Performance(clf)
+#-------------------------------------------------------------------------#
+
+
+#-------- Print the accuracy percentage ----------------------------------#
+    # check_Classifier_Testing_Performance(clf, x_test, y_test)
+#-------------------------------------------------------------------------#
+
+
+#-------- Print the best parameters --------------------------------------#
+    print("Best parameters: {}".format(clf.best_params_))
+#-------------------------------------------------------------------------#
+
+
+#-------- Print Classifier Performance Report-----------------------------#
+    classifier_Performance_Report(clf, x_test, y_test)
+#-------------------------------------------------------------------------#
+
+
+#-------- Plot classifier confusion matrix--------------------------------#
+    classifier_Confusion_Matrix(clf, x_test, y_test)
+#-------------------------------------------------------------------------#
+
+
+#-------- Plot hyperparameter graph --------------------------------------#
     plot_Hyperparameter_Op(clf)
+#-------------------------------------------------------------------------#
+
+
+# plot_Classifier_Performance(clf, x_test, y_test)
