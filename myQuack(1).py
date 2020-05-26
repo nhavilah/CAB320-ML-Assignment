@@ -205,7 +205,7 @@ def plot_Hyperparameter_Op(clf, x_test, y_test):
     plt.ylabel('average test score')
     plt.legend(loc="lower right")
     plt.grid(True)
-    plt.savefig('plots/' + parameters[0])
+    # plt.savefig('plots/' + parameters[0])
     plt.show()
 
 
