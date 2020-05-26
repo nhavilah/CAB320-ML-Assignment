@@ -87,8 +87,11 @@ def build_DecisionTree_classifier(X_training, y_training):
     model = tree.DecisionTreeClassifier(random_state=1)
     # adjust arange values for the values tested
     params = {"max_depth": np.arange(1, 10, 1)}
-    clf = GridSearchCV(model, params, cv=10, n_jobs=-1, scoring=[
-                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+
+    # clf = GridSearchCV(model, params, cv=10, n_jobs=-1, scoring=[
+    #                    'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
+                       scoring=['accuracy'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,8 +111,11 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     model = KNeighborsClassifier()
     # adjust arange values for the values tested
     params = {"n_neighbors": np.arange(8, 30, 1)}
-    clf = GridSearchCV(model, params, cv=10, scoring=[
-                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+
+    # clf = GridSearchCV(model, params, cv=10, scoring=[
+    #                    'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
+                       scoring=['accuracy'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 
@@ -129,8 +135,11 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     model = svm.SVC(random_state=1)
     # adjust arange values for the values tested
     params = {"C": np.arange(1, 15, 1)}
-    clf = GridSearchCV(model, params, cv=10, scoring=[
-                       'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+    # clf = GridSearchCV(model, params, cv=10, n_jobs=-1, scoring=[
+    #                    'accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+
+    clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
+                       scoring=['accuracy'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 
@@ -150,8 +159,11 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     '''
     model = MLPClassifier(max_iter=1500, random_state=10)
     params = {'hidden_layer_sizes': np.arange(60, 70, 1)}
+
+    # clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
+    #                    scoring=['accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
     clf = GridSearchCV(model, params, cv=10, n_jobs=-1,
-                       scoring=['accuracy', 'precision', 'roc_auc', 'recall', 'f1'], refit='accuracy')
+                       scoring=['accuracy'], refit='accuracy')
     clf.fit(X_training, y_training)
     return clf
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,7 +174,7 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 # Plots a graph of
 
 
-def plot_Hyperparameter_Op(clf):
+def plot_Hyperparameter_Op(clf, x_test, y_test):
     # Create and array of the hyperparameter that was tuned
     parameters = list()
     for parameter in clf.param_grid.keys():
@@ -183,7 +195,10 @@ def plot_Hyperparameter_Op(clf):
 
     metric_num = 0
     for score in scores:
-        plt.plot(values, score, '-', label=metrics[metric_num])
+        plt.scatter(values, score)
+        z = np.polyfit(values, score, 4)
+        p = np.poly1d(z)
+        plt.plot(values, p(values), "--", label=metrics[metric_num])
         metric_num += 1
 
     plt.xlabel(parameters[0])
@@ -200,12 +215,12 @@ def check_Classifier_Both_Performance(clf):
     train_score = clf.score(x_train, y_train) * 100
     test_error = 100 - test_score
     train_error = 100 - train_score
-    print('Train Accuracy: %.2f%%' % train_score,
-          '\tTrain Error: %.2f%%' % train_error)
-    print('Test Accuracy: %.2f%%' % test_score,
-          '\tTest Error: %.2f%%' % test_error)
+    print('Train Accuracy:\t%.2f%%' % train_score,
+          '\t\tTrain Error:\t%.2f%%' % train_error)
+    print('Test Accuracy:\t%.2f%%' % test_score,
+          '\t\tTest Error:\t%.2f%%' % test_error)
     
-
+    
 # evaluates the classifier's accuracy using the testing data
 def check_Classifier_Testing_Performance(clf, x_testing, y_testing):
     results = balanced_accuracy_score(
@@ -260,10 +275,11 @@ if __name__ == "__main__":
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.2, random_state=100)
 
-    # for assessor purposes, uncomment the classifier you want to use
-    # no other lines should need to be commented out, as the rest of the code
-    # handles training and testing for you
-    # list of classifiers
+
+
+# NOTE TO THE ASSESSOR:
+# Please uncomment the classifier that you would like to test, as well as
+# any testing / plotting funtions that you wish to use
 
 
 # Classifiers
@@ -283,20 +299,21 @@ if __name__ == "__main__":
 
 
 #-------- SVM Classifier -------------------------------------------------#
-    # print("SVM")
-    # clf = build_SupportVectorMachine_classifier(
-    #     x_train, y_train)
-#-------------------------------------------------------------------------#
-
-
-#-------- Neural Network Classifier --------------------------------------#
-    print("Neural Network")
-    clf = build_NeuralNetwork_classifier(
+    print("SVM")
+    clf = build_SupportVectorMachine_classifier(
         x_train, y_train)
 #-------------------------------------------------------------------------#
 
 
+#-------- Neural Network Classifier --------------------------------------#
+    # print("Neural Network")
+    # clf = build_NeuralNetwork_classifier(
+    #     x_train, y_train)
+#-------------------------------------------------------------------------#
+
+
 # Classifier performance / plotting methods
+
 
 #-------- Print testing / training scores --------------------------------#
     check_Classifier_Both_Performance(clf)
@@ -324,7 +341,7 @@ if __name__ == "__main__":
 
 
 #-------- Plot hyperparameter graph --------------------------------------#
-    plot_Hyperparameter_Op(clf)
+    plot_Hyperparameter_Op(clf, x_test, y_test)
 #-------------------------------------------------------------------------#
 
 
